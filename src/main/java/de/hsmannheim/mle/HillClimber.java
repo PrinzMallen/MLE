@@ -4,60 +4,90 @@ import java.util.Random;
 
 public class HillClimber {
 
+    private final int anzahlDurchläufe = 1000000;
+
     // alle staedte in einer matrix.
-    private int[][] distance;
+    private final int[][] entfernungen;
     // alle staedte in einer bestimmten reihenfolge
-    private int[] trip;
+    private int[] tour;
 
     public static void main(String[] args) {
         HillClimber HillClimber = new HillClimber();
-        HillClimber.DoTrip();
+        HillClimber.starteTour();
     }
 
     public HillClimber() {
-        distance = new int[100][100];
-        Random random = new Random();
-        for (int i = 0; i < distance.length - 1; i++) {
-            for (int j = 0; j < distance.length - 1; j++) {
-                distance[i][j] = random.nextInt(100);
+        entfernungen = new int[100][100];
+        Random zufallsGenerator = new Random();
+        for (int i = 0; i < entfernungen.length - 1; i++) {
+            for (int j = 0; j < entfernungen.length - 1; j++) {
+                //nur wenn es wirklich eine Distanz geben kann
+                if (j != i) {
+                    //keine 0 als distanz
+                    int zufälligeEntfernung = zufallsGenerator.nextInt(100) + 1;
+                    //x zu y gleiche distanz wie y zu x
+                    entfernungen[i][j] = zufälligeEntfernung;
+                    entfernungen[j][i] = zufälligeEntfernung;
+                }
+
             }
         }
-        trip = new int[100];
-        for (int i = 0; i < trip.length; i++) {
-            trip[i] = i;
+        tour = new int[100];
+        for (int i = 0; i < tour.length; i++) {
+            tour[i] = i;
         }
     }
 
-    public int getFitness(int[] trip1) {
-        int tripDistance = 0;
-        for (int i = 0; i < trip1.length - 1; i++) {
-            tripDistance += distance[trip1[i]][trip1[1 + i]];
+    public int errechneGesamtDistanz(int[] tour) {
+        int tourStrecke = 0;
+        //errechne weg bis zur letzten stadt
+        for (int i = 0; i < tour.length - 1; i++) {
+            tourStrecke += entfernungen[tour[i]][tour[1 + i]];
         }
-        tripDistance += distance[trip1.length - 1][trip1[0]];
-        return tripDistance;
+        //kehre zurück zur ersten Stadt
+        tourStrecke += entfernungen[tour.length - 1][tour[0]];
+        return tourStrecke;
     }
 
-    public void DoTrip() {
+    public void starteTour() {
         Random random = new Random();
-        int lastFitness = getFitness(trip);
-        for (int i = 0; i < 1000; i++) {
-            int[] newTrip = swap(random.nextInt(100), random.nextInt(100));
-            int thisFitness = getFitness(newTrip);
-            if (thisFitness < lastFitness) {
-                lastFitness = thisFitness;
-                this.trip = newTrip;
+        //errechne tour von 1-100
+        int besteDistanz = errechneGesamtDistanz(tour);
+        int anzahlErfolgloserDurchgänge = 0;
+        System.out.println("Anfangsdistanz: "+besteDistanz);
+        for (int i = 0; i < anzahlDurchläufe; i++) {
+            //ändere Tour leicht, aber stelle sicher das sich etwas ändert
+            int stadtA = 0;
+            int stadtB = 0;
+            while(stadtA==stadtB){
+                stadtA=random.nextInt(100);
+                stadtB=random.nextInt(100);
             }
-            System.out.println("Durchlauf Nummer: " + i + ", Kürzester Weg: " + lastFitness
-                    + ", Aktueller Weg: " + thisFitness);
+            int[] neueTour = swap(stadtA, stadtB);
+            //errechne veränderte Tour
+            int neueDistanz = errechneGesamtDistanz(neueTour);
+            //wenn neue beste Distanz gefunden, speichern + ausgabe
+            if (neueDistanz < besteDistanz) {
+                besteDistanz = neueDistanz;
+                this.tour = neueTour;
+                System.out.println("Durchlauf Nummer: " + i + ", Kürzester bisheriger Weg: " + besteDistanz
+                        + ", benötigte Durchläufe bis zur Verbesserung: " + anzahlErfolgloserDurchgänge);
+                anzahlErfolgloserDurchgänge=0;
+            } else {
+                anzahlErfolgloserDurchgänge++;
+            }
+
         }
+        System.out.println("Beste errechnete Distanz: "+besteDistanz);
     }
 
     private int[] swap(int v1, int v2) {
-        int[] trip = this.trip;
-        int temp = trip[v1];
-        trip[v1] = trip[v2];
-        trip[v2] = temp;
-        return trip;
+        //standard 3 Eck-Swap
+        int[] neueTour = this.tour;
+        int temp = neueTour[v1];
+        neueTour[v1] = neueTour[v2];
+        neueTour[v2] = temp;
+        return neueTour;
     }
 
 }
