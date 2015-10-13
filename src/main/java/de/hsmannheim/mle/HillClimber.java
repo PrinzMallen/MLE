@@ -7,7 +7,7 @@ public class HillClimber {
     // alle staedte in einer matrix.
     private int[][] distance;
     // alle staedte in einer bestimmten reihenfolge
-    private int[] trip = new int[100];
+    private int[] trip;
 
     public static void main(String[] args) {
         HillClimber HillClimber = new HillClimber();
@@ -17,10 +17,9 @@ public class HillClimber {
     public HillClimber() {
         distance = new int[100][100];
         Random random = new Random();
-        for (int i = 0; i < distance[0].length - 1; i++) {
-            for (int j = i + 1; j < distance[1].length - 1; j++) {
+        for (int i = 0; i < distance.length - 1; i++) {
+            for (int j = 0; j < distance.length - 1; j++) {
                 distance[i][j] = random.nextInt(100);
-                distance[j][i] = random.nextInt(100);
             }
         }
         trip = new int[100];
@@ -48,8 +47,8 @@ public class HillClimber {
                 lastFitness = thisFitness;
                 this.trip = newTrip;
             }
-            System.out.println("Durchlauf " + i + ", Kürzester " + lastFitness
-                    + ", Dieser " + thisFitness);
+            System.out.println("Durchlauf Nummer: " + i + ", Kürzester Weg: " + lastFitness
+                    + ", Aktueller Weg: " + thisFitness);
         }
     }
 
