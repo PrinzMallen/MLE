@@ -17,21 +17,27 @@ import java.util.Random;
  */
 public class EvolutionäreAlgorithmen {
 
-    private static final int anzahlIndividuen = 100;
-    private static final double mutationsRate = 0.2;
-    private static final double kreuzRate = 0.8;
+    private static final int anzahlIndividuen = 500;
+    private static final double mutationsRate = 0.4;
+    private static final double kreuzRate = 0.2;
     private static final int anzahlGene = 100;
-    private static Individuum[] population = new Individuum[anzahlIndividuen];
+    private static List<Individuum> population = new ArrayList<>();
     private static final BitSet besteGene = new Individuum(anzahlIndividuen).getGene();
 
     public static void main(String[] argu) {
         erstellePopulation();
-        while (population[findeIndexVonBestesIndividuum()].getFitness() < 80) {
-            System.out.println(population[findeIndexVonBestesIndividuum()].getFitness());
-            Individuum[] tempPop = selektieren();
+        int i=0;
+        while (population.get(findeIndexVonBestesIndividuum()).getFitness() <anzahlGene-1) {
+            
+            System.out.println(population.get(findeIndexVonBestesIndividuum()).getFitness());
+            List<Individuum> tempPop = selektieren();
+                   
             kreuzen(tempPop);
             mutieren();
+            errechneFitness();
+            i++;
         }
+        System.out.println(i);
     }
 
     private static void erstellePopulation() {
@@ -39,20 +45,26 @@ public class EvolutionäreAlgorithmen {
         for (int i = 0; i < anzahlIndividuen; i++) {
             Individuum individuum = new Individuum(anzahlGene);
             individuum.setFitness(besteGene);
-            population[i] = individuum;
+            population.add(individuum);
 
         }
     }
+    
+    private static void errechneFitness(){
+        for(Individuum individuum:population){
+            individuum.setFitness(besteGene);
+        }
+    }
 
-    private static void kreuzen(Individuum[] tempPop) {
+    private static void kreuzen(List<Individuum> tempPop) {
         int selektionsAnzahl = (int) ((1 - kreuzRate) * anzahlIndividuen);
         int anzahlPaarungen = anzahlIndividuen - selektionsAnzahl;
         Random random = new Random();
         while (anzahlPaarungen > 0) {
-            int indexA = random.nextInt(anzahlIndividuen);
-            int indexB = random.nextInt(anzahlIndividuen);
-            if (indexA != indexB && population[indexA] != null && population[indexB] != null) {
-                tempPop[selektionsAnzahl++] = population[indexA].kreuzen(population[indexB]);
+            int indexA = random.nextInt(population.size()-1);
+            int indexB = random.nextInt(population.size()-1);
+            if (indexA != indexB) {
+                tempPop.add(population.get(indexA).kreuzen(population.get(indexB)));
                 anzahlPaarungen--;
             }
 
@@ -64,69 +76,65 @@ public class EvolutionäreAlgorithmen {
 
     private static void mutieren() {
         int anzahlMutationen = (int) ((mutationsRate) * anzahlIndividuen);
-        Random random = new Random();
-        List<Integer> schonMutiert = new ArrayList<>();
-        while (anzahlMutationen > 0) {
-            int index = random.nextInt(anzahlIndividuen);
-            if (!schonMutiert.contains(index)) {
-                population[index].mutiere();
-                schonMutiert.add(index);
-                anzahlMutationen--;
-            }
 
+        List<Individuum> tempPop = new ArrayList<>();
+        while (anzahlMutationen > 0) {
+            Random random = new Random();
+
+            int index = random.nextInt(population.size() - 1);
+            Individuum individuum = population.remove(index);
+            individuum.mutiere();
+            tempPop.add(individuum);
+
+            anzahlMutationen--;
         }
+        population.addAll(tempPop);
+
     }
 
-    private static int findeIndexVonBestesIndividuum() {
+
+private static int findeIndexVonBestesIndividuum() {
         double maxFitness = -1;
         int index = 0;
         for (int i = 0; i < anzahlIndividuen; i++) {
-            if (maxFitness < population[i].getFitness()) {
+            if (maxFitness < population.get(i).getFitness()) {
                 index = i;
-                maxFitness = population[i].getFitness();
+                maxFitness = population.get(i).getFitness();
             }
         }
         return index;
     }
 
-    private static Individuum[] selektieren() {
+    private static List<Individuum> selektieren() {
         int gesamtFitness = errechneGesamtFitness();
-        Individuum[] tempPopulation = new Individuum[anzahlIndividuen];
+        List<Individuum> tempPopulation = new ArrayList<>();
         int bestes = findeIndexVonBestesIndividuum();
-        tempPopulation[0] = population[bestes];
-        List<Integer> indexBereitsSelektiert = new ArrayList<>();
+        tempPopulation.add(population.remove(bestes));
 
         int selektionsAnzahl = (int) ((1 - kreuzRate) * anzahlIndividuen) - 1;
         Random random = new Random();
 
-        int bereitsSelektiert = 1;
+       
         while (selektionsAnzahl > 0) {
-            int index = random.nextInt(anzahlIndividuen - 1);
+            int index = random.nextInt(population.size() - 1);
             double rndWsk = random.nextDouble();
             double summeWsk = 0;
 
             while (summeWsk < rndWsk) {
-                if(!indexBereitsSelektiert.contains(index)){
-                double pr = errechnePr(gesamtFitness, population[index].getFitness());
+                double pr = errechnePr(gesamtFitness, population.get(index).getFitness());
                 summeWsk += pr;
-                }
+
                 index++;
-                if (index >= anzahlIndividuen) {
+                if (index >= population.size() - 1) {
                     index = 0;
                 }
             }
 
-            if (!indexBereitsSelektiert.contains(index)) {
-                tempPopulation[bereitsSelektiert++] = population[index];
-                indexBereitsSelektiert.add(index);
-                selektionsAnzahl--;
-            }
-            else{
-                System.out.println(Arrays.toString(indexBereitsSelektiert.toArray()));
-            }
+            tempPopulation.add(population.remove(index));
 
-            //verhindere, dass Individuum öfter gewählt wird 
-            indexBereitsSelektiert.add(index);
+            selektionsAnzahl--;
+
+            
 
         }
         return tempPopulation;

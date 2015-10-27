@@ -35,6 +35,7 @@ public class Individuum {
     
 
     public double setFitness(BitSet besteGene) {
+        fitness=0;
         for (int i = 0; i < gene.length(); i++) {
             if (besteGene.get(i) == gene.get(i)) {
                 fitness++;
@@ -46,8 +47,8 @@ public class Individuum {
     public Individuum kreuzen(Individuum partner) {
         Random random = new Random();
         //kein komplettes crossover .. 50 zu 50
-        int spaltungStelle =random.nextInt((int) (gene.length()*0.5d));
-        BitSet gekreuzteGene=new BitSet(gene.length());
+        int spaltungStelle =random.nextInt((int) (gene.size()/2));
+        BitSet gekreuzteGene=new BitSet(gene.size());
         for(int i=0;i<gene.length();i++){
             if(i<=spaltungStelle){
                 gekreuzteGene.set(i, this.gene.get(i));
@@ -61,7 +62,7 @@ public class Individuum {
     
     public void mutiere(){
         Random random = new Random();
-        gene.flip(random.nextInt(gene.length()-1));
+        gene.flip(random.nextInt(gene.size()-1));
     }
 
     public BitSet getGene() {
