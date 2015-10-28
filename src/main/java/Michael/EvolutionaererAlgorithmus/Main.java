@@ -6,7 +6,7 @@ public class Main {
 
     static int population = 10000;
     static int mutationsrate = 10;
-    static int guteGene = 100;
+    static int guteGene = 1;
     static int fitnessSumme;
     static Gen zielGen = new Gen(100);
     static Gen[] gene = new Gen[population];

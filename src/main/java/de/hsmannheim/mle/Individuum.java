@@ -29,6 +29,8 @@ public class Individuum {
         }
     }
     
+    
+    
     public Individuum(BitSet gene){
         this.gene=gene;
     }
@@ -47,9 +49,9 @@ public class Individuum {
     public Individuum kreuzen(Individuum partner) {
         Random random = new Random();
         //kein komplettes crossover .. 50 zu 50
-        int spaltungStelle =random.nextInt((int) (gene.size()/2));
+        int spaltungStelle =random.nextInt((gene.size()-1));
         BitSet gekreuzteGene=new BitSet(gene.size());
-        for(int i=0;i<gene.length();i++){
+        for(int i=0;i<gene.size();i++){
             if(i<=spaltungStelle){
                 gekreuzteGene.set(i, this.gene.get(i));
             }
