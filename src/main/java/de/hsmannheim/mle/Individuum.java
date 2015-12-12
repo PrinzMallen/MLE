@@ -18,9 +18,11 @@ public class Individuum {
 
     private double fitness;
 
-    public Individuum(int genAnzahl) {
+    Random random;
+
+    public Individuum(int genAnzahl, Random random) {
         gene = new BitSet(genAnzahl);
-        Random random = new Random();
+        this.random = random;
         for (int i = 0; i < genAnzahl; i++) {
             if (random.nextBoolean()) {
                 gene.set(i);
@@ -28,16 +30,14 @@ public class Individuum {
 
         }
     }
-    
-    
-    
-    public Individuum(BitSet gene){
-        this.gene=gene;
+
+    public Individuum(BitSet gene, Random random) {
+        this.random = random;
+        this.gene = gene;
     }
-    
 
     public double setFitness(BitSet besteGene) {
-        fitness=0;
+        fitness = 0;
         for (int i = 0; i < gene.length(); i++) {
             if (besteGene.get(i) == gene.get(i)) {
                 fitness++;
@@ -46,25 +46,31 @@ public class Individuum {
         return fitness;
     }
 
-    public Individuum kreuzen(Individuum partner) {
-        Random random = new Random();
+    public Individuum[] kreuzen(Individuum partner) {
+
         //kein komplettes crossover .. 50 zu 50
-        int spaltungStelle =random.nextInt((gene.size()-1));
-        BitSet gekreuzteGene=new BitSet(gene.size());
-        for(int i=0;i<gene.size();i++){
-            if(i<=spaltungStelle){
-                gekreuzteGene.set(i, this.gene.get(i));
-            }
-            else{
-                 gekreuzteGene.set(i, partner.getGene().get(i));
+        int spaltungStelle = random.nextInt((gene.size() - 1));
+        BitSet gekreuzteGene1 = new BitSet(gene.size());
+        BitSet gekreuzteGene2 = new BitSet(gene.size());
+        for (int i = 0; i < gene.size(); i++) {
+            if (i <= spaltungStelle) {
+                gekreuzteGene1.set(i, this.gene.get(i));
+
+                gekreuzteGene2.set(i, partner.getGene().get(i));
+            } else {
+                gekreuzteGene1.set(i, partner.getGene().get(i));
+                gekreuzteGene2.set(i, this.gene.get(i));
             }
         }
-        return new Individuum(gekreuzteGene);
+        Individuum[] kinder = new Individuum[2];
+        kinder[0] = new Individuum(gekreuzteGene1, random);
+        kinder[1] = new Individuum(gekreuzteGene2, random);
+        return kinder;
     }
-    
-    public void mutiere(){
-        Random random = new Random();
-        gene.flip(random.nextInt(gene.size()-1));
+
+    public void mutiere() {
+
+        gene.flip(random.nextInt(gene.size() - 1));
     }
 
     public BitSet getGene() {
@@ -78,11 +84,5 @@ public class Individuum {
     public void setFitness(double fitness) {
         this.fitness = fitness;
     }
-    
-    
-    
-    
-    
-    
 
 }

@@ -17,16 +17,18 @@ import java.util.Random;
  */
 public class EvolutionäreAlgorithmen {
 
-    private static final int anzahlIndividuen = 2000;
-    private static final double mutationsRate = 0.5;
-    private static final double kreuzRate = 0.8;
-    private static final int anzahlGöttlicherAktionen = 20;
-    private static final int anzahlGene = 1000;
+    private static final int anzahlIndividuen = 100;
+    private static final double mutationsRate = 0.1;
+    private static final double kreuzRate = 0.25;
+    private static final int anzahlGöttlicherAktionen = 1;
+    private static final int anzahlGene = 100;
     private static List<Individuum> population = new ArrayList<>();
-    private static final BitSet besteGene = new Individuum(anzahlGene).getGene();
+    private static final Random random = new Random(0);
+    private static final BitSet besteGene = new Individuum(anzahlGene, random).getGene();
 
     public static void main(String[] argu) {
         erstellePopulation();
+        System.out.println(population.size());
         int i = 0;
         double max = population.get(findeIndexVonBestesIndividuum()).getFitness();
         while (population.get(findeIndexVonBestesIndividuum()).getFitness() < anzahlGene - 1) {
@@ -34,6 +36,9 @@ public class EvolutionäreAlgorithmen {
                 max = population.get(findeIndexVonBestesIndividuum()).getFitness();
                 System.out.println(max);
             }
+//            if(max>population.get(findeIndexVonBestesIndividuum()).getFitness()){
+//                System.out.println("FAIL");
+//            }
 
             List<Individuum> tempPop = selektieren();
 
@@ -48,7 +53,7 @@ public class EvolutionäreAlgorithmen {
     private static void erstellePopulation() {
 
         for (int i = 0; i < anzahlIndividuen; i++) {
-            Individuum individuum = new Individuum(anzahlGene);
+            Individuum individuum = new Individuum(anzahlGene, random);
             individuum.setFitness(besteGene);
             population.add(individuum);
 
@@ -63,7 +68,7 @@ public class EvolutionäreAlgorithmen {
 
     private static void kreuzen(List<Individuum> tempPop) {
         population.addAll(tempPop);
-        int gesamtFitness=errechneGesamtFitness();
+        int gesamtFitness = errechneGesamtFitness();
         int selektionsAnzahl = (int) ((1 - kreuzRate) * anzahlIndividuen);
         int anzahlPaarungen = anzahlIndividuen - selektionsAnzahl;
         while (anzahlPaarungen > 0) {
@@ -71,12 +76,15 @@ public class EvolutionäreAlgorithmen {
             int indexB = wähleIndividuumAnhandFitness(gesamtFitness);
             if (indexA != indexB) {
                 //TODO 2 Kinder.. Eventuell mit einem aufruf und array zurückgeben. Dann kann man quasi vater x mutter, mutter x vater machen mit selber Spaltungstelle
-                Individuum neues = population.get(indexA).kreuzen(population.get(indexB));
+                Individuum neue[] = population.get(indexA).kreuzen(population.get(indexB));
                 //neues.setFitness(besteGene);
                 //System.out.println(population.get(indexA).getFitness()+"x "+population.get(indexB).getFitness()+" ="+neues.getFitness());
-                tempPop.add(neues);
+                tempPop.add(neue[0]);
                 anzahlPaarungen--;
-
+                if (anzahlPaarungen > 0) {
+                    tempPop.add(neue[1]);
+                    anzahlPaarungen--;
+                }
             }
 
         }
@@ -90,7 +98,7 @@ public class EvolutionäreAlgorithmen {
 
         List<Individuum> tempPop = new ArrayList<>();
         while (anzahlMutationen > 0) {
-            Random random = new Random();
+           
 
             int index = random.nextInt(population.size() - 1);
             Individuum individuum = population.remove(index);
@@ -149,20 +157,21 @@ public class EvolutionäreAlgorithmen {
     }
 
     private static int wähleIndividuumAnhandFitness(int gesamtFitness) {
-        Random random = new Random();
+
         int index = random.nextInt(population.size() - 1);
         double rndWsk = random.nextDouble();
         double summeWsk = 0;
 
-        while (summeWsk < rndWsk) {
+        do {
+            index++;
             double pr = errechnePr(gesamtFitness, population.get(index).getFitness());
             summeWsk += pr;
 
-            index++;
+            
             if (index >= population.size() - 1) {
                 index = 0;
             }
-        }
+        }while (summeWsk < rndWsk) ;
         return index;
     }
 }
